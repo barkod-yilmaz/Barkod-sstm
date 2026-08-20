@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Yönetici Paneli</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #ffffff;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .login-box {
+            background: #1a1a2e;
+            border-radius: 24px;
+            padding: 30px 20px;
+            text-align: center;
+            display: none;
+        }
+
+        .login-box.active {
+            display: block;
+        }
+
+        .login-box h1 {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+
+        .login-box input {
+            width: 100%;
+            padding: 16px;
+            margin-bottom: 15px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            background: #0f0f1a;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .btn {
+            padding: 16px 24px;
+            background: #4f8ef7;
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #6ba1f8;
+        }
+
+        .btn-danger {
+            background: #e74c3c;
+        }
+
+        .btn-danger:hover {
+            background: #c0392b;
+        }
+
+        .btn-success {
+            background: #2ecc71;
+        }
+
+        .btn-success:hover {
+            background: #27ae60;
+        }
+
+        .panel {
+            display: none;
+        }
+
+        .panel.active {
+            display: block;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #1a1a2e;
+            border-radius: 16px;
+        }
+
+        .panel-header h1 {
+            font-size: 20px;
+        }
+
+        .add-product {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+
+        .add-product h2 {
+            font-size: 18px;
+            margin-bottom: 15px;
+        }
+
+        .add-product input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            margin-bottom: 10px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            background: #0f0f1a;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .add-product input[type="file"] {
+            margin-bottom: 15px;
+            color: #a0a0b0;
+        }
+
+        .product-list {
+            display: grid;
+            gap: 12px;
+        }
+
+        .product-card {
+            background: #1a1a2e;
+            border-radius: 16px;
+            padding: 20px;
+        }
+
+        .product-info {
+            margin-bottom: 15px;
+        }
+
+        .product-barcode {
+            font-size: 18px;
+            font-weight: 700;
+            color: #4f8ef7;
+            margin-bottom: 5px;
+        }
+
+        .product-photos {
+            font-size: 13px;
+            color: #a0a0b0;
+        }
+
+        .product-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .product-actions button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .view-btn {
+            background: #4f8ef7;
+            color: white;
+        }
+
+        .delete-btn {
+            background: #e74c3c;
+            color: white;
+        }
+
+        .message {
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+            display: none;
+            font-weight: 600;
+        }
+
+        .message.success {
+            background: rgba(46,204,113,0.2);
+            color: #2ecc71;
+            display: block;
+        }
+
+        .message.error {
+            background: rgba(231,76,60,0.2);
+            color: #e74c3c;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Giriş Ekranı -->
+        <div class="login-box active" id="loginBox">
+            <h1>🔐 YÖNETİCİ GİRİŞİ</h1>
+            <input type="password" id="passwordInput" placeholder="Şifre girin">
+            <button class="btn" onclick="login()">Giriş Yap</button>
+        </div>
+
+        <!-- Yönetim Paneli -->
+        <div class="panel" id="adminPanel">
+            <div class="panel-header">
+                <h1>📦 ÜRÜN YÖNETİMİ</h1>
+                <button class="btn btn-danger" onclick="logout()">Çıkış</button>
+            </div>
+
+            <div class="message" id="messageBox"></div>
+
+            <div class="add-product">
+                <h2>➕ Yeni Ürün Ekle</h2>
+                <input type="text" id="newBarcode" placeholder="Barkod numarası girin">
+                <input type="file" id="photoInput" accept="image/*" multiple>
+                <button class="btn btn-success" onclick="addProduct()">Ürünü Kaydet</button>
+            </div>
+
+            <div class="product-list" id="productList"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+        let token = localStorage.getItem('adminToken') || '';
+
+        function login() {
+            const password = document.getElementById('passwordInput').value;
+            
+            if (!password) {
+                showMessage('Lütfen şifre girin', 'error');
+                return;
+            }
+
+            if (password === 'RFCRFCPLRNM343804380') {
+                token = password;
+                localStorage.setItem('adminToken', token);
+                showPanel();
+                loadProducts();
+            } else {
+                showMessage('Hatalı şifre!', 'error');
+            }
+        }
+
+        function logout() {
+            token = '';
+            localStorage.removeItem('adminToken');
+            document.getElementById('loginBox').classList.add('active');
+            document.getElementById('adminPanel').classList.remove('active');
+            document.getElementById('passwordInput').value = '';
+        }
+
+        function showPanel() {
+            document.getElementById('loginBox').classList.remove('active');
+            document.getElementById('adminPanel').classList.add('active');
+        }
+
+        function showMessage(text, type) {
+            const msgBox = document.getElementById('messageBox');
+            msgBox.textContent = text;
+            msgBox.className = 'message ' + type;
+            setTimeout(() => {
+                msgBox.className = 'message';
+            }, 3000);
+        }
+
+        async function loadProducts() {
+            try {
+                const response = await fetch(`${API_URL}/api/products`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const products = await response.json();
+                displayProducts(products);
+            } catch (error) {
+                showMessage('Ürünler yüklenemedi', 'error');
+            }
+        }
+
+        function displayProducts(products) {
+            const productList = document.getElementById('productList');
+            productList.innerHTML = '';
+
+            if (products.length === 0) {
+                productList.innerHTML = '<p style="text-align:center;color:#a0a0b0;">Henüz ürün eklenmemiş</p>';
+                return;
+            }
+
+            products.forEach(product => {
+                const card = document.createElement('div');
+                card.className = 'product-card';
+                card.innerHTML = `
+                    <div class="product-info">
+                        <div class="product-barcode">${product.barcode}</div>
+                        <div class="product-photos">${product.photo_count} Fotoğraf</div>
+                    </div>
+                    <div class="product-actions">
+                        <button class="view-btn" onclick="viewPhotos('${product.barcode}')">👁 Görüntüle</button>
+                        <button class="delete-btn" onclick="deleteProduct(${product.id})">🗑 Sil</button>
+                    </div>
+                `;
+                productList.appendChild(card);
+            });
+        }
+
+        async function addProduct() {
+            const barcode = document.getElementById('newBarcode').value.trim();
+            const photoInput = document.getElementById('photoInput');
+            const files = photoInput.files;
+
+            if (!barcode) {
+                showMessage('Lütfen barkod girin', 'error');
+                return;
+            }
+
+            if (files.length === 0) {
+                showMessage('Lütfen en az bir fotoğraf seçin', 'error');
+                return;
+            }
+
+            const photos = [];
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const reader = new FileReader();
+                
+                const dataUrl = await new Promise((resolve) => {
+                    reader.onload = (e) => resolve(e.target.result);
+                    reader.readAsDataURL(file);
+                });
+                
+                const base64Data = dataUrl.split(',')[1];
+                photos.push({
+                    filename: file.name,
+                    data: base64Data
+                });
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/products`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ barcode, photos })
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showMessage('Ürün başarıyla kaydedildi', 'success');
+                    document.getElementById('newBarcode').value = '';
+                    document.getElementById('photoInput').value = '';
+                    loadProducts();
+                } else {
+                    showMessage(data.error || 'Kayıt başarısız', 'error');
+                }
+            } catch (error) {
+                showMessage('Bağlantı hatası', 'error');
+            }
+        }
+
+        async function deleteProduct(id) {
+            if (!confirm('Bu ürünü silmek istediğinize emin misiniz?')) {
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/products/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+
+                if (response.ok) {
+                    showMessage('Ürün başarıyla silindi', 'success');
+                    loadProducts();
+                } else {
+                    showMessage('Silme başarısız', 'error');
+                }
+            } catch (error) {
+                showMessage('Bağlantı hatası', 'error');
+            }
+        }
+
+        function viewPhotos(barcode) {
+            window.open(`/?barcode=${barcode}`, '_blank');
+        }
+
+        // Sayfa yüklendiğinde token kontrolü
+        if (token) {
+            showPanel();
+            loadProducts();
+        }
+
+        document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                login();
+            }
+        });
+    </script>
+</body>
+</html>

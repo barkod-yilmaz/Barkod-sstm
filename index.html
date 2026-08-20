@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barkod Sorgulama</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #0a0a0f;
+            color: #ffffff;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 500px;
+            background: #1a1a2e;
+            border-radius: 24px;
+            padding: 30px 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #4f8ef7, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .header p {
+            color: #a0a0b0;
+            font-size: 13px;
+        }
+
+        .search-box {
+            margin-bottom: 20px;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            padding: 16px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            background: #0f0f1a;
+            color: #fff;
+            font-size: 16px;
+            outline: none;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus {
+            border-color: #4f8ef7;
+            box-shadow: 0 0 0 3px rgba(79,142,247,0.1);
+        }
+
+        .btn {
+            padding: 16px 20px;
+            background: #4f8ef7;
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn:hover {
+            background: #6ba1f8;
+            transform: translateY(-2px);
+        }
+
+        .btn:active {
+            transform: scale(0.98);
+        }
+
+        .btn-secondary {
+            background: #1a1a2e;
+            border: 2px solid rgba(255,255,255,0.1);
+            width: 100%;
+            margin-bottom: 10px;
+        }
+
+        .btn-secondary:hover {
+            border-color: #4f8ef7;
+            background: #1a2744;
+        }
+
+        .result {
+            display: none;
+            margin-top: 20px;
+        }
+
+        .result-header {
+            text-align: center;
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #0f0f1a;
+            border-radius: 16px;
+        }
+
+        .barcode-display {
+            font-size: 20px;
+            font-weight: 700;
+            color: #4f8ef7;
+            margin-bottom: 5px;
+        }
+
+        .photo-count {
+            font-size: 13px;
+            color: #a0a0b0;
+        }
+
+        .photo-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .photo-item {
+            aspect-ratio: 1;
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .photo-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .photo-item:hover img {
+            transform: scale(1.05);
+        }
+
+        .error {
+            text-align: center;
+            padding: 20px;
+            background: rgba(231,76,60,0.1);
+            border-radius: 16px;
+            color: #e74c3c;
+            font-weight: 600;
+            display: none;
+        }
+
+        .admin-link {
+            text-align: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .admin-link a {
+            color: #a0a0b0;
+            text-decoration: none;
+            font-size: 12px;
+            transition: color 0.3s;
+        }
+
+        .admin-link a:hover {
+            color: #4f8ef7;
+        }
+
+        @media (max-width: 400px) {
+            .photo-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .input-group {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🔍 BARKOD SORGULAMA</h1>
+            <p>Barkod numarasını girin, ürün fotoğraflarını görüntüleyin</p>
+        </div>
+
+        <div class="search-box">
+            <div class="input-group">
+                <input type="text" id="barcodeInput" placeholder="Barkod numarasını girin" inputmode="numeric">
+                <button class="btn" onclick="searchProduct()">SORGULA</button>
+            </div>
+            <button class="btn btn-secondary" onclick="openCamera()">📷 Kamera ile Tara</button>
+        </div>
+
+        <div class="error" id="errorBox"></div>
+
+        <div class="result" id="resultBox">
+            <div class="result-header">
+                <div class="barcode-display" id="resultBarcode"></div>
+                <div class="photo-count" id="resultCount"></div>
+            </div>
+            <div class="photo-grid" id="photoGrid"></div>
+        </div>
+
+        <div class="admin-link">
+            <a href="/admin.html">Yönetici Girişi</a>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = window.location.origin;
+
+        async function searchProduct() {
+            const barcode = document.getElementById('barcodeInput').value.trim();
+            const errorBox = document.getElementById('errorBox');
+            const resultBox = document.getElementById('resultBox');
+            
+            errorBox.style.display = 'none';
+            resultBox.style.display = 'none';
+
+            if (!barcode) {
+                showError('Lütfen barkod numarası girin');
+                return;
+            }
+
+            try {
+                const response = await fetch(`${API_URL}/api/search/${barcode}`);
+                const data = await response.json();
+
+                if (!response.ok) {
+                    showError(data.error || 'Ürün bulunamadı');
+                    return;
+                }
+
+                displayResult(data);
+            } catch (error) {
+                showError('Bağlantı hatası oluştu');
+            }
+        }
+
+        function displayResult(data) {
+            const resultBox = document.getElementById('resultBox');
+            const resultBarcode = document.getElementById('resultBarcode');
+            const resultCount = document.getElementById('resultCount');
+            const photoGrid = document.getElementById('photoGrid');
+
+            resultBarcode.textContent = data.barcode;
+            resultCount.textContent = `${data.photos.length} Fotoğraf`;
+            
+            photoGrid.innerHTML = '';
+            
+            data.photos.forEach(photo => {
+                const photoDiv = document.createElement('div');
+                photoDiv.className = 'photo-item';
+                
+                const img = document.createElement('img');
+                img.src = `${API_URL}/api/photo/${photo.id}`;
+                img.alt = photo.filename;
+                img.onclick = () => window.open(img.src, '_blank');
+                
+                photoDiv.appendChild(img);
+                photoGrid.appendChild(photoDiv);
+            });
+
+            resultBox.style.display = 'block';
+        }
+
+        function showError(message) {
+            const errorBox = document.getElementById('errorBox');
+            errorBox.textContent = message;
+            errorBox.style.display = 'block';
+        }
+
+        async function openCamera() {
+            alert('Kamera özelliği yakında eklenecek');
+        }
+
+        document.getElementById('barcodeInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchProduct();
+            }
+        });
+    </script>
+</body>
+</html>
