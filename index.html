@@ -10,7 +10,6 @@
             padding: 0;
             box-sizing: border-box;
         }
-
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background: #0a0a0f;
@@ -21,7 +20,6 @@
             align-items: center;
             padding: 20px;
         }
-
         .container {
             width: 100%;
             max-width: 500px;
@@ -30,12 +28,10 @@
             padding: 30px 20px;
             box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         }
-
         .header {
             text-align: center;
             margin-bottom: 30px;
         }
-
         .header h1 {
             font-size: 24px;
             margin-bottom: 8px;
@@ -44,22 +40,18 @@
             -webkit-text-fill-color: transparent;
             background-clip: text;
         }
-
         .header p {
             color: #a0a0b0;
             font-size: 13px;
         }
-
         .search-box {
             margin-bottom: 20px;
         }
-
         .input-group {
             display: flex;
             gap: 10px;
             margin-bottom: 15px;
         }
-
         input[type="text"] {
             flex: 1;
             padding: 16px;
@@ -71,12 +63,10 @@
             outline: none;
             transition: all 0.3s;
         }
-
         input[type="text"]:focus {
             border-color: #4f8ef7;
             box-shadow: 0 0 0 3px rgba(79,142,247,0.1);
         }
-
         .btn {
             padding: 16px 20px;
             background: #4f8ef7;
@@ -88,33 +78,17 @@
             cursor: pointer;
             transition: all 0.3s;
         }
-
         .btn:hover {
             background: #6ba1f8;
             transform: translateY(-2px);
         }
-
         .btn:active {
             transform: scale(0.98);
         }
-
-        .btn-secondary {
-            background: #1a1a2e;
-            border: 2px solid rgba(255,255,255,0.1);
-            width: 100%;
-            margin-bottom: 10px;
-        }
-
-        .btn-secondary:hover {
-            border-color: #4f8ef7;
-            background: #1a2744;
-        }
-
         .result {
             display: none;
             margin-top: 20px;
         }
-
         .result-header {
             text-align: center;
             margin-bottom: 20px;
@@ -122,25 +96,21 @@
             background: #0f0f1a;
             border-radius: 16px;
         }
-
         .barcode-display {
             font-size: 20px;
             font-weight: 700;
             color: #4f8ef7;
             margin-bottom: 5px;
         }
-
         .photo-count {
             font-size: 13px;
             color: #a0a0b0;
         }
-
         .photo-grid {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
             gap: 10px;
         }
-
         .photo-item {
             aspect-ratio: 1;
             border-radius: 12px;
@@ -148,18 +118,15 @@
             cursor: pointer;
             position: relative;
         }
-
         .photo-item img {
             width: 100%;
             height: 100%;
             object-fit: cover;
             transition: transform 0.3s;
         }
-
         .photo-item:hover img {
             transform: scale(1.05);
         }
-
         .error {
             text-align: center;
             padding: 20px;
@@ -169,30 +136,121 @@
             font-weight: 600;
             display: none;
         }
-
         .admin-link {
             text-align: center;
             margin-top: 30px;
             padding-top: 20px;
             border-top: 1px solid rgba(255,255,255,0.1);
         }
-
         .admin-link a {
             color: #a0a0b0;
             text-decoration: none;
             font-size: 12px;
             transition: color 0.3s;
         }
-
         .admin-link a:hover {
             color: #4f8ef7;
+        }        .photo-viewer-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.95);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
         }
-
+        .photo-viewer-modal.active {
+            display: flex;
+        }
+        .photo-viewer-header {
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 20px;
+            z-index: 1001;
+        }
+        .photo-viewer-close {
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .photo-viewer-close:hover {
+            background: rgba(255,255,255,0.3);
+        }
+        .photo-viewer-counter {
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+        }
+        .photo-viewer-container {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+            touch-action: pan-y;
+        }
+        .photo-viewer-image {
+            max-width: 100%;
+            max-height: 90vh;
+            object-fit: contain;
+            user-select: none;
+            -webkit-user-select: none;
+            pointer-events: none;
+        }
+        .photo-viewer-hint {
+            position: absolute;
+            bottom: 40px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0,0,0,0.6);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            pointer-events: none;
+        }
+        .photo-viewer-download {
+            position: absolute;
+            bottom: 30px;
+            left: 20px;
+            background: rgba(255,255,255,0.2);
+            border: none;
+            color: white;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+            z-index: 1002;
+        }
+        .photo-viewer-download:hover {
+            background: rgba(255,255,255,0.4);
+        }
         @media (max-width: 400px) {
             .photo-grid {
                 grid-template-columns: 1fr;
             }
-            
             .input-group {
                 flex-direction: column;
             }
@@ -205,17 +263,13 @@
             <h1>🔍 BARKOD SORGULAMA</h1>
             <p>Barkod numarasını girin, ürün fotoğraflarını görüntüleyin</p>
         </div>
-
         <div class="search-box">
             <div class="input-group">
                 <input type="text" id="barcodeInput" placeholder="Barkod numarasını girin" inputmode="numeric">
                 <button class="btn" onclick="searchProduct()">SORGULA</button>
             </div>
-            <button class="btn btn-secondary" onclick="openCamera()">📷 Kamera ile Tara</button>
         </div>
-
         <div class="error" id="errorBox"></div>
-
         <div class="result" id="resultBox">
             <div class="result-header">
                 <div class="barcode-display" id="resultBarcode"></div>
@@ -223,14 +277,27 @@
             </div>
             <div class="photo-grid" id="photoGrid"></div>
         </div>
-
         <div class="admin-link">
             <a href="/admin.html">Yönetici Girişi</a>
         </div>
     </div>
-
-    <script>
+    <div class="photo-viewer-modal" id="photoViewerModal">
+        <div class="photo-viewer-header">
+            <button class="photo-viewer-close" onclick="closePhotoViewer()">✕</button>
+            <div class="photo-viewer-counter" id="photoViewerCounter">1 / 5</div>
+            <div style="width: 40px;"></div>
+        </div>
+        <div class="photo-viewer-container" id="photoViewerContainer">
+            <img class="photo-viewer-image" id="photoViewerImage" src="" alt="Ürün Fotoğrafı">
+            <div class="photo-viewer-hint">⬅️ Kaydırarak diğer fotoğraflara geç ➡️</div>
+            <button class="photo-viewer-download" onclick="downloadCurrentPhoto()">💾</button>
+        </div>
+    </div>    <script>
         const API_URL = window.location.origin;
+        let currentPhotos = [];
+        let currentPhotoIndex = 0;
+        let touchStartX = 0;
+        let touchEndX = 0;
 
         async function searchProduct() {
             const barcode = document.getElementById('barcodeInput').value.trim();
@@ -270,15 +337,16 @@
             resultCount.textContent = `${data.photos.length} Fotoğraf`;
             
             photoGrid.innerHTML = '';
+            currentPhotos = data.photos;
             
-            data.photos.forEach(photo => {
+            data.photos.forEach((photo, index) => {
                 const photoDiv = document.createElement('div');
                 photoDiv.className = 'photo-item';
                 
                 const img = document.createElement('img');
                 img.src = `${API_URL}/api/photo/${photo.id}`;
                 img.alt = photo.filename;
-                img.onclick = () => window.open(img.src, '_blank');
+                img.onclick = () => openPhotoViewer(index);
                 
                 photoDiv.appendChild(img);
                 photoGrid.appendChild(photoDiv);
@@ -287,15 +355,146 @@
             resultBox.style.display = 'block';
         }
 
+        function openPhotoViewer(index) {
+            if (!currentPhotos.length) return;
+            
+            currentPhotoIndex = index;
+            const modal = document.getElementById('photoViewerModal');
+            const img = document.getElementById('photoViewerImage');
+            const counter = document.getElementById('photoViewerCounter');
+            
+            img.src = `${API_URL}/api/photo/${currentPhotos[index].id}`;
+            counter.textContent = `${index + 1} / ${currentPhotos.length}`;
+            
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closePhotoViewer() {
+            const modal = document.getElementById('photoViewerModal');
+            modal.classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        function navigatePhoto(direction) {
+            if (!currentPhotos.length) return;
+            
+            currentPhotoIndex += direction;
+            
+            if (currentPhotoIndex < 0) {
+                currentPhotoIndex = currentPhotos.length - 1;
+            }
+            if (currentPhotoIndex >= currentPhotos.length) {
+                currentPhotoIndex = 0;
+            }
+            
+            const img = document.getElementById('photoViewerImage');
+            const counter = document.getElementById('photoViewerCounter');
+            
+            img.src = `${API_URL}/api/photo/${currentPhotos[currentPhotoIndex].id}`;
+            counter.textContent = `${currentPhotoIndex + 1} / ${currentPhotos.length}`;
+        }
+
+        async function downloadCurrentPhoto() {
+            if (!currentPhotos.length) return;
+            
+            const photo = currentPhotos[currentPhotoIndex];
+            const url = `${API_URL}/api/photo/${photo.id}`;
+            
+            try {
+                const response = await fetch(url);
+                const blob = await response.blob();
+                const blobUrl = URL.createObjectURL(blob);
+                
+                const link = document.createElement('a');
+                link.href = blobUrl;
+                link.download = `${photo.filename || 'fotograf_' + (currentPhotoIndex + 1) + '.jpg'}`;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                
+                URL.revokeObjectURL(blobUrl);
+            } catch (error) {
+                showError('Fotoğraf indirilemedi');
+            }
+        }
+
         function showError(message) {
             const errorBox = document.getElementById('errorBox');
             errorBox.textContent = message;
             errorBox.style.display = 'block';
         }
 
-        async function openCamera() {
-            alert('Kamera özelliği yakında eklenecek');
-        }
+        const viewerContainer = document.getElementById('photoViewerContainer');
+
+        viewerContainer.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+        }, { passive: true });
+
+        viewerContainer.addEventListener('touchmove', (e) => {
+            touchEndX = e.touches[0].clientX;
+        }, { passive: true });
+
+        viewerContainer.addEventListener('touchend', () => {
+            const swipeDistance = touchEndX - touchStartX;
+            
+            if (Math.abs(swipeDistance) > 50) {
+                if (swipeDistance > 0) {
+                    navigatePhoto(-1);
+                } else {
+                    navigatePhoto(1);
+                }
+            }
+            
+            touchStartX = 0;
+            touchEndX = 0;
+        });
+
+        let mouseStartX = 0;
+        let mouseEndX = 0;
+        let isMouseDown = false;
+
+        viewerContainer.addEventListener('mousedown', (e) => {
+            isMouseDown = true;
+            mouseStartX = e.clientX;
+        });
+
+        viewerContainer.addEventListener('mousemove', (e) => {
+            if (isMouseDown) {
+                mouseEndX = e.clientX;
+            }
+        });
+
+        viewerContainer.addEventListener('mouseup', () => {
+            if (isMouseDown) {
+                const swipeDistance = mouseEndX - mouseStartX;
+                
+                if (Math.abs(swipeDistance) > 50) {
+                    if (swipeDistance > 0) {
+                        navigatePhoto(-1);
+                    } else {
+                        navigatePhoto(1);
+                    }
+                }
+                
+                isMouseDown = false;
+                mouseStartX = 0;
+                mouseEndX = 0;
+            }
+        });
+
+        document.addEventListener('keydown', (e) => {
+            const modal = document.getElementById('photoViewerModal');
+            if (!modal.classList.contains('active')) return;
+            
+            if (e.key === 'ArrowLeft') {
+                navigatePhoto(-1);
+            } else if (e.key === 'ArrowRight') {
+                navigatePhoto(1);
+            } else if (e.key === 'Escape') {
+                closePhotoViewer();
+            }
+        });
 
         document.getElementById('barcodeInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
