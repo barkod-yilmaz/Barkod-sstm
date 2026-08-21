@@ -56,9 +56,7 @@ def admin_required(f):
         if auth != f"Bearer {ADMIN_PASSWORD}":
             return jsonify({"error": "Yetkisiz erişim"}), 401
         return f(*args, **kwargs)
-    return decorated_function
-
-@app.route('/')
+    return decorated_function@app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
 
@@ -78,7 +76,9 @@ def login():
     password = data.get('password', '')
     if password == ADMIN_PASSWORD:
         return jsonify({"success": True, "token": ADMIN_PASSWORD})
-    return jsonify({"success": False, "error": "Hatalı şifre"}), 401@app.route('/api/products', methods=['GET'])
+    return jsonify({"success": False, "error": "Hatalı şifre"}), 401
+
+@app.route('/api/products', methods=['GET'])
 @admin_required
 def get_products():
     conn = get_db()
@@ -113,9 +113,7 @@ def search_product(barcode):
         "barcode": product['barcode'],
         "created_at": product['created_at'],
         "photos": [{"id": ph['id'], "filename": ph['filename']} for ph in photos]
-    })
-
-@app.route('/api/products', methods=['POST'])
+    })@app.route('/api/products', methods=['POST'])
 @admin_required
 def add_product():
     data = request.json
@@ -202,9 +200,7 @@ def export_zip():
         mimetype='application/zip',
         as_attachment=True,
         download_name='barkod_yedek_' + datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.zip'
-    )
-
-@app.route('/api/import_zip', methods=['POST'])
+    )@app.route('/api/import_zip', methods=['POST'])
 @admin_required
 def import_zip():
     if 'file' not in request.files:
