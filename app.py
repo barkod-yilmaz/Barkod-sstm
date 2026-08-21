@@ -17,9 +17,7 @@ CORS(app)
 ADMIN_PASSWORD = "RFCRFCPLRNM343804380"
 DB_PATH = "products.db"
 UPLOAD_FOLDER = "uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-def get_db():
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
@@ -52,6 +50,7 @@ init_db()
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
+    
         auth = request.headers.get('Authorization', '')
         if auth != f"Bearer {ADMIN_PASSWORD}":
             return jsonify({"error": "Yetkisiz erişim"}), 401
@@ -76,9 +75,7 @@ def login():
     password = data.get('password', '')
     if password == ADMIN_PASSWORD:
         return jsonify({"success": True, "token": ADMIN_PASSWORD})
-    return jsonify({"success": False, "error": "Hatalı şifre"}), 401
-
-@app.route('/api/products', methods=['GET'])
+    return jsonify({"success": False, "error": "Hatalı şifre"}), 401@app.route('/api/products', methods=['GET'])
 @admin_required
 def get_products():
     conn = get_db()
@@ -200,7 +197,9 @@ def export_zip():
         mimetype='application/zip',
         as_attachment=True,
         download_name='barkod_yedek_' + datetime.now().strftime('%Y-%m-%d_%H-%M-%S') + '.zip'
-    )@app.route('/api/import_zip', methods=['POST'])
+    )
+
+@app.route('/api/import_zip', methods=['POST'])
 @admin_required
 def import_zip():
     if 'file' not in request.files:
@@ -249,7 +248,5 @@ def import_zip():
         conn.close()
         return jsonify({"success": True, "message": "ZIP yedek başarıyla içe aktarıldı"})
     except Exception as e:
-        return jsonify({"error": f"Dosya okunamadı: {str(e)}"}), 400
-
-if __name__ == '__main__':
+        return jsonify({"error": f"Dosya okunamadı: {str(e)}"}), 400if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)
