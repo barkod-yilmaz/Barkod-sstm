@@ -226,6 +226,33 @@
             color: #e74c3c;
             display: block;
         }
+
+        .backup-control {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .backup-control input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            background: #0f0f1a;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+        }
+
+        .auto-status {
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            font-size: 13px;
+            color: #a0a0b0;
+            text-align: center;
+        }
     </style>
 </head>
 <body><div class="container">
@@ -253,9 +280,19 @@
         </div>
 
         <div class="add-product">
-            <h2>💾 Yedekleme</h2>
-            <button class="btn btn-secondary" onclick="exportData()">📤 Verileri Dışa Aktar</button>
-            <button class="btn btn-secondary" onclick="importData()">📥 Yedekten İçe Aktar</button>
+            <h2>🗜️ ZIP ile Yedekleme</h2>
+            <button class="btn btn-secondary" onclick="exportZip()">📤 ZIP Yedek Al</button>
+            <button class="btn btn-secondary" onclick="importZip()">📥 ZIP Yedekten Geri Yükle</button>
+        </div>
+
+        <div class="add-product">
+            <h2>⏰ Otomatik Yedekleme</h2>
+            <div class="backup-control">
+                <input type="number" id="autoBackupInterval" placeholder="Dakika (örn: 10)" min="1" value="10">
+                <button class="btn btn-success" onclick="startAutoBackup()" style="width:auto; margin-bottom:0;">▶ Başlat</button>
+                <button class="btn btn-danger" onclick="stopAutoBackup()" style="width:auto; margin-bottom:0;">⏹ Durdur</button>
+            </div>
+            <div class="auto-status" id="autoBackupStatus">Otomatik yedekleme kapalı</div>
         </div>
 
         <div class="product-list" id="productList"></div>
@@ -264,6 +301,7 @@
 
 <script>        const API_URL = window.location.origin;
         let token = localStorage.getItem('adminToken') || '';
+        let autoBackupTimer = null;
 
         function login() {
             const password = document.getElementById('passwordInput').value;
@@ -286,6 +324,7 @@
         function logout() {
             token = '';
             localStorage.removeItem('adminToken');
+            stopAutoBackup();
             document.getElementById('loginBox').classList.add('active');
             document.getElementById('adminPanel').classList.remove('active');
             document.getElementById('passwordInput').value = '';
@@ -426,67 +465,96 @@
             window.open(`/?barcode=${barcode}`, '_blank');
         }
 
-        async function exportData() {
+        async function exportZip() {
             try {
-                const response = await fetch(`${API_URL}/api/export`, {
+                const response = await fetch(`${API_URL}/api/export_zip`, {
                     headers: { 'Authorization': `Bearer ${token}` }
                 });
-                const data = await response.json();
 
                 if (response.ok) {
-                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const blob = await response.blob();
                     const url = URL.createObjectURL(blob);
                     const link = document.createElement('a');
                     link.href = url;
-                    link.download = 'barkod_yedek_' + new Date().toISOString().slice(0,10) + '.json';
+                    link.download = 'barkod_yedek_' + new Date().toISOString().slice(0,10) + '.zip';
                     document.body.appendChild(link);
                     link.click();
                     document.body.removeChild(link);
                     URL.revokeObjectURL(url);
-                    showMessage('Yedek başarıyla indirildi', 'success');
+                    showMessage('ZIP yedeği başarıyla indirildi', 'success');
                 } else {
-                    showMessage(data.error || 'Yedek alınamadı', 'error');
+                    const data = await response.json();
+                    showMessage(data.error || 'ZIP yedeği alınamadı', 'error');
                 }
             } catch (error) {
                 showMessage('Bağlantı hatası', 'error');
             }
         }
 
-        async function importData() {
+        function importZip() {
             const input = document.createElement('input');
             input.type = 'file';
-            input.accept = '.json';
+            input.accept = '.zip';
             input.onchange = async function(e) {
                 const file = e.target.files[0];
                 if (!file) return;
 
-                const reader = new FileReader();
-                reader.onload = async function(event) {
-                    try {
-                        const data = JSON.parse(event.target.result);
-                        const response = await fetch(`${API_URL}/api/import`, {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'Authorization': `Bearer ${token}`
-                            },
-                            body: JSON.stringify(data)
-                        });
+                const formData = new FormData();
+                formData.append('file', file);
 
-                        if (response.ok) {
-                            showMessage('Yedek başarıyla içe aktarıldı', 'success');
-                            loadProducts();
-                        } else {
-                            const result = await response.json();
-                            showMessage(result.error || 'İçe aktarma başarısız', 'error');
-                        }
-                    } catch (error) {
-                        showMessage('Dosya okunamadı', 'error');
+                try {
+                    const response = await fetch(`${API_URL}/api/import_zip`, {
+                        method: 'POST',
+                        headers: { 'Authorization': `Bearer ${token}` },
+                        body: formData
+                    });
+
+                    const data = await response.json();
+                    if (response.ok) {
+                        showMessage('ZIP yedeği başarıyla içe aktarıldı', 'success');
+                        loadProducts();
+                    } else {
+                        showMessage(data.error || 'İçe aktarma başarısız', 'error');
                     }
-                };
-                reader.readAsText(file);
+                } catch (error) {
+                    showMessage('Bağlantı hatası', 'error');
+                }
             };
             input.click();
+        }
+
+        function startAutoBackup() {
+            const intervalInput = document.getElementById('autoBackupInterval');
+            const minutes = parseInt(intervalInput.value);
+
+            if (!minutes || minutes < 1) {
+                showMessage('Lütfen geçerli bir dakika değeri girin', 'error');
+                return;
+            }
+
+            if (autoBackupTimer) {
+                clearInterval(autoBackupTimer);
+            }
+
+            const milliseconds = minutes * 60 * 1000;
+            autoBackupTimer = setInterval(() => {
+                exportZip();
+                document.getElementById('autoBackupStatus').textContent = 
+                    'Son otomatik yedek: ' + new Date().toLocaleTimeString();
+            }, milliseconds);
+
+            document.getElementById('autoBackupStatus').textContent = 
+                `Otomatik yedekleme aktif (her ${minutes} dakikada bir)`;
+            showMessage('Otomatik yedekleme başlatıldı', 'success');
+        }
+
+        function stopAutoBackup() {
+            if (autoBackupTimer) {
+                clearInterval(autoBackupTimer);
+                autoBackupTimer = null;
+                document.getElementById('autoBackupStatus').textContent = 'Otomatik yedekleme kapalı';
+                showMessage('Otomatik yedekleme durduruldu', 'success');
+            }
         }
 
         // Sayfa yüklendiğinde token kontrolü
