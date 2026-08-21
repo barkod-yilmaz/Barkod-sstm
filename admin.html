@@ -63,13 +63,13 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.3s;
+            width: 100%;
+            margin-bottom: 10px;
         }
 
         .btn:hover {
             background: #6ba1f8;
-        }
-
-        .btn-danger {
+        }        .btn-danger {
             background: #e74c3c;
         }
 
@@ -83,6 +83,16 @@
 
         .btn-success:hover {
             background: #27ae60;
+        }
+
+        .btn-secondary {
+            background: #1a1a2e;
+            border: 2px solid rgba(255,255,255,0.1);
+        }
+
+        .btn-secondary:hover {
+            border-color: #4f8ef7;
+            background: #1a2744;
         }
 
         .panel {
@@ -105,6 +115,13 @@
 
         .panel-header h1 {
             font-size: 20px;
+        }
+
+        .panel-header .btn {
+            width: auto;
+            margin-bottom: 0;
+            padding: 10px 15px;
+            font-size: 14px;
         }
 
         .add-product {
@@ -134,6 +151,7 @@
         .add-product input[type="file"] {
             margin-bottom: 15px;
             color: #a0a0b0;
+            width: 100%;
         }
 
         .product-list {
@@ -210,37 +228,41 @@
         }
     </style>
 </head>
-<body>
-    <div class="container">
-        <!-- Giriş Ekranı -->
-        <div class="login-box active" id="loginBox">
-            <h1>🔐 YÖNETİCİ GİRİŞİ</h1>
-            <input type="password" id="passwordInput" placeholder="Şifre girin">
-            <button class="btn" onclick="login()">Giriş Yap</button>
-        </div>
-
-        <!-- Yönetim Paneli -->
-        <div class="panel" id="adminPanel">
-            <div class="panel-header">
-                <h1>📦 ÜRÜN YÖNETİMİ</h1>
-                <button class="btn btn-danger" onclick="logout()">Çıkış</button>
-            </div>
-
-            <div class="message" id="messageBox"></div>
-
-            <div class="add-product">
-                <h2>➕ Yeni Ürün Ekle</h2>
-                <input type="text" id="newBarcode" placeholder="Barkod numarası girin">
-                <input type="file" id="photoInput" accept="image/*" multiple>
-                <button class="btn btn-success" onclick="addProduct()">Ürünü Kaydet</button>
-            </div>
-
-            <div class="product-list" id="productList"></div>
-        </div>
+<body><div class="container">
+    <!-- Giriş Ekranı -->
+    <div class="login-box active" id="loginBox">
+        <h1>🔐 YÖNETİCİ GİRİŞİ</h1>
+        <input type="password" id="passwordInput" placeholder="Şifre girin">
+        <button class="btn" onclick="login()">Giriş Yap</button>
     </div>
 
-    <script>
-        const API_URL = window.location.origin;
+    <!-- Yönetim Paneli -->
+    <div class="panel" id="adminPanel">
+        <div class="panel-header">
+            <h1>📦 ÜRÜN YÖNETİMİ</h1>
+            <button class="btn btn-danger" onclick="logout()">Çıkış</button>
+        </div>
+
+        <div class="message" id="messageBox"></div>
+
+        <div class="add-product">
+            <h2>➕ Yeni Ürün Ekle</h2>
+            <input type="text" id="newBarcode" placeholder="Barkod numarası girin">
+            <input type="file" id="photoInput" accept="image/*" multiple>
+            <button class="btn btn-success" onclick="addProduct()">Ürünü Kaydet</button>
+        </div>
+
+        <div class="add-product">
+            <h2>💾 Yedekleme</h2>
+            <button class="btn btn-secondary" onclick="exportData()">📤 Verileri Dışa Aktar</button>
+            <button class="btn btn-secondary" onclick="importData()">📥 Yedekten İçe Aktar</button>
+        </div>
+
+        <div class="product-list" id="productList"></div>
+    </div>
+</div>
+
+<script>        const API_URL = window.location.origin;
         let token = localStorage.getItem('adminToken') || '';
 
         function login() {
@@ -402,6 +424,69 @@
 
         function viewPhotos(barcode) {
             window.open(`/?barcode=${barcode}`, '_blank');
+        }
+
+        async function exportData() {
+            try {
+                const response = await fetch(`${API_URL}/api/export`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await response.json();
+
+                if (response.ok) {
+                    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const link = document.createElement('a');
+                    link.href = url;
+                    link.download = 'barkod_yedek_' + new Date().toISOString().slice(0,10) + '.json';
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                    URL.revokeObjectURL(url);
+                    showMessage('Yedek başarıyla indirildi', 'success');
+                } else {
+                    showMessage(data.error || 'Yedek alınamadı', 'error');
+                }
+            } catch (error) {
+                showMessage('Bağlantı hatası', 'error');
+            }
+        }
+
+        async function importData() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = async function(e) {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const reader = new FileReader();
+                reader.onload = async function(event) {
+                    try {
+                        const data = JSON.parse(event.target.result);
+                        const response = await fetch(`${API_URL}/api/import`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${token}`
+                            },
+                            body: JSON.stringify(data)
+                        });
+
+                        if (response.ok) {
+                            showMessage('Yedek başarıyla içe aktarıldı', 'success');
+                            loadProducts();
+                        } else {
+                            const result = await response.json();
+                            showMessage(result.error || 'İçe aktarma başarısız', 'error');
+                        }
+                    } catch (error) {
+                        showMessage('Dosya okunamadı', 'error');
+                    }
+                };
+                reader.readAsText(file);
+            };
+            input.click();
         }
 
         // Sayfa yüklendiğinde token kontrolü
