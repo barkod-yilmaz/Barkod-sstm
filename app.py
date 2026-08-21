@@ -17,7 +17,9 @@ CORS(app)
 ADMIN_PASSWORD = "RFCRFCPLRNM343804380"
 DB_PATH = "products.db"
 UPLOAD_FOLDER = "uploads"
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)def get_db():
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+def get_db():
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     return conn
@@ -50,12 +52,13 @@ init_db()
 def admin_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-    
         auth = request.headers.get('Authorization', '')
         if auth != f"Bearer {ADMIN_PASSWORD}":
             return jsonify({"error": "Yetkisiz erişim"}), 401
         return f(*args, **kwargs)
-    return decorated_function@app.route('/')
+    return decorated_function
+
+@app.route('/')
 def index():
     return send_from_directory('.', 'index.html')
 
@@ -75,7 +78,9 @@ def login():
     password = data.get('password', '')
     if password == ADMIN_PASSWORD:
         return jsonify({"success": True, "token": ADMIN_PASSWORD})
-    return jsonify({"success": False, "error": "Hatalı şifre"}), 401@app.route('/api/products', methods=['GET'])
+    return jsonify({"success": False, "error": "Hatalı şifre"}), 401
+
+@app.route('/api/products', methods=['GET'])
 @admin_required
 def get_products():
     conn = get_db()
@@ -110,7 +115,9 @@ def search_product(barcode):
         "barcode": product['barcode'],
         "created_at": product['created_at'],
         "photos": [{"id": ph['id'], "filename": ph['filename']} for ph in photos]
-    })@app.route('/api/products', methods=['POST'])
+    })
+
+@app.route('/api/products', methods=['POST'])
 @admin_required
 def add_product():
     data = request.json
@@ -167,7 +174,9 @@ def delete_product(product_id):
     conn.execute('DELETE FROM products WHERE id = ?', (product_id,))
     conn.commit()
     conn.close()
-    return jsonify({"success": True, "message": "Ürün başarıyla silindi"})@app.route('/api/export_zip', methods=['GET'])
+    return jsonify({"success": True, "message": "Ürün başarıyla silindi"})
+
+@app.route('/api/export_zip', methods=['GET'])
 @admin_required
 def export_zip():
     conn = get_db()
@@ -248,5 +257,7 @@ def import_zip():
         conn.close()
         return jsonify({"success": True, "message": "ZIP yedek başarıyla içe aktarıldı"})
     except Exception as e:
-        return jsonify({"error": f"Dosya okunamadı: {str(e)}"}), 400if __name__ == '__main__':
+        return jsonify({"error": f"Dosya okunamadı: {str(e)}"}), 400
+
+if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)
