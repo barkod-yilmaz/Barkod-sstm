@@ -185,3 +185,55 @@ def delete_photo(photo_id):
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5000, debug=False)
+
+@app.route('/api/export', methods=['GET'])
+@admin_required
+def export_data():
+    conn = get_db()
+    products = conn.execute('SELECT * FROM products').fetchall()
+    result = []
+    for p in products:
+        photos = conn.execute('SELECT * FROM photos WHERE product_id = ?', (p['id'],)).fetchall()
+        result.append({
+            "id": p['id'],
+            "barcode": p['barcode'],
+            "photos": [{
+                "id": ph['id'],
+                "filename": ph['filename'],
+                "data": base64.b64encode(ph['data']).decode('utf-8')
+            } for ph in photos]
+        })
+    conn.close()
+    return jsonify(result)
+
+@app.route('/api/import', methods=['POST'])
+@admin_required
+def import_data():
+    data = request.json
+    if not isinstance(data, list):
+        return jsonify({"error": "Geçersiz veri formatı"}), 400
+
+    conn = get_db()
+    for item in data:
+        barcode = item.get('barcode', '').strip()
+        if not barcode:
+            continue
+
+        existing = conn.execute('SELECT id FROM products WHERE barcode = ?', (barcode,)).fetchone()
+        if existing:
+            product_id = existing['id']
+        else:
+            cursor = conn.execute('INSERT INTO products (barcode) VALUES (?)', (barcode,))
+            product_id = cursor.lastrowid
+
+        for photo in item.get('photos', []):
+            filename = photo.get('filename', 'photo.jpg')
+            data_b64 = photo.get('data', '')
+            if data_b64:
+                binary_data = base64.b64decode(data_b64)
+                conn.execute('INSERT INTO photos (product_id, filename, data) VALUES (?, ?, ?)',
+                            (product_id, filename, binary_data))
+
+    conn.commit()
+    conn.close()
+    return jsonify({"success": True, "message": "Yedek başarıyla içe aktarıldı"})
